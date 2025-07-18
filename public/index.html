@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام الدعوات</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    /* ... (ابقى باقي الـ CSS كما هو في الكود السابق) ... */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>طلب دعوة للمنصة</h1>
+    <form id="inviteForm">
+      <div class="form-group">
+        <label for="email">البريد الإلكتروني</label>
+        <input type="email" id="email" required placeholder="example@domain.com">
+      </div>
+      <button type="submit">إرسال الطلب</button>
+    </form>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    document.getElementById('inviteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const button = e.target.querySelector('button');
+      const message = document.getElementById('message');
+
+      button.disabled = true;
+      button.textContent = 'جاري الإرسال...';
+      message.style.display = 'none';
+
+      try {
+        const response = await fetch('/api/sendEmail', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'فشل في إرسال الطلب');
+        }
+
+        message.textContent = 'تم إرسال طلبك بنجاح!';
+        message.className = 'success';
+        e.target.reset();
+
+      } catch (error) {
+        console.error('Error:', error);
+        message.textContent = `خطأ: ${error.message}`;
+        message.className = 'error';
+      } finally {
+        message.style.display = 'block';
+        button.disabled = false;
+        button.textContent = 'إرسال الطلب';
+      }
+    });
+  </script>
+</body>
+</html>
