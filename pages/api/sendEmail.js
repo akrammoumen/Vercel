@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 
 export default async function handler(req, res) {
-  // تعطيل مصادقة Vercel الافتراضية وإضافة CORS
+  // إعداد رؤوس CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -26,9 +26,18 @@ export default async function handler(req, res) {
 
       await new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail({
         to: [{ email: process.env.ADMIN_EMAIL || 'your-email@example.com' }],
-        sender: { email: 'noreply@yourdomain.com', name: 'نظام الدعوات' },
+        sender: { 
+          email: 'noreply@yourdomain.com', 
+          name: 'نظام الدعوات' 
+        },
         subject: 'طلب جديد',
-        htmlContent: `طلب من: ${email}`
+        htmlContent: `
+          <div dir="rtl">
+            <h2>طلب جديد</h2>
+            <p>البريد: <strong>${email}</strong></p>
+            <p>الوقت: ${new Date().toLocaleString()}</p>
+          </div>
+        `
       });
     }
 
@@ -41,27 +50,5 @@ export default async function handler(req, res) {
       error: 'حدث خطأ في الخادم',
       details: error.message 
     });
-  }
-}
-export default async function handler(req, res) {
-  // إعداد CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  try {
-    const { email } = req.body;
-    console.log('Received email:', email);
-    
-    // هنا يمكنك إضافة كود إرسال الإيميل عبر Brevo إذا كنت تستخدمه
-    
-    return res.status(200).json({ success: true });
-    
-  } catch (error) {
-    console.error('Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
   }
 }
